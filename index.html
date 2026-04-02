@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DRISHTI FLANGES AND METAL</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg: #f4f7f9; --card: #ffffff; --accent: #1a73e8; --accent2: #e67e22;
+            --text: #222; --muted: #666; --border: #e0e0e0; --danger: #e74c3c; --success: #27ae60;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 75px; overflow-x: hidden; }
+        .container { padding: 12px; max-width: 900px; margin: auto; }
+        .app-header { background: var(--accent); color: white; padding: 14px 16px 10px; text-align: center; }
+        .app-header h1 { margin: 0; font-size: 16px; letter-spacing: 0.5px; }
+        .app-header p { margin: 2px 0 0; font-size: 11px; opacity: 0.8; }
+        .card { background: var(--card); border-radius: 12px; padding: 12px; margin-bottom: 14px; border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+        h2 { font-size: 16px; color: var(--accent); border-left: 4px solid var(--accent); padding-left: 10px; margin: 0 0 14px; }
+        h3 { font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+        label { font-size: 11px; font-weight: 600; display: block; margin-bottom: 3px; color: var(--muted); }
+        input, select { width: 100%; padding: 9px 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px; background: #fafafa; transition: border 0.2s; }
+        input:focus, select:focus { border-color: var(--accent); outline: none; background: #fff; }
+        input[readonly] { background: #f0f0f0; color: var(--muted); }
+        .btn { padding: 12px 16px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; width: 100%; }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-orange { background: var(--accent2); color: white; }
+        .btn-grey { background: #6c757d; color: white; }
+        .btn-teal { background: #17a2b8; color: white; }
+        .btn-del { color: var(--danger); border: 1px solid var(--danger); background: none; padding: 4px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        .btn-edit { color: var(--accent); border: 1px solid var(--accent); background: none; padding: 4px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        .btn:active { opacity: 0.85; }
+        .row2 { display: flex; gap: 8px; }
+        .row2 > div { flex: 1; min-width: 0; }
+        .date-strip { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+        .date-strip input[type="date"] { flex: 1; margin-bottom: 0; font-size: 13px; padding: 9px 8px; }
+        .date-nav-btn { background: var(--accent); color: white; border: none; border-radius: 8px; padding: 9px 13px; font-size: 17px; cursor: pointer; flex-shrink: 0; line-height: 1; }
+        .compact-row { display: grid; grid-template-columns: 1fr 1fr 0.7fr 0.8fr; gap: 6px; margin-bottom: 4px; }
+        .compact-row label { font-size: 10px; }
+        .compact-row input, .compact-row select { padding: 7px 6px; font-size: 12px; margin-bottom: 0; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: #fff; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); box-shadow: 0 -2px 8px rgba(0,0,0,0.06); }
+        .nav-btn { background: none; border: none; color: #aaa; font-size: 11px; text-align: center; flex: 1; cursor: pointer; padding: 5px 0; }
+        .nav-btn span { font-size: 22px; display: block; }
+        .nav-btn.active { color: var(--accent); font-weight: bold; }
+        .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 14px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; min-width: 420px; }
+        th { background: #2c3e50; color: white; padding: 9px 6px; white-space: nowrap; }
+        td { padding: 8px 6px; border-bottom: 1px solid #f0f0f0; background: #fff; }
+        tr:last-child td { border-bottom: none; }
+        .summary-header td { background: #eef3fb; font-weight: bold; color: var(--accent); font-size: 12px; }
+        .total-box { background: linear-gradient(135deg,#f39c12,#e67e22); color: white; padding: 12px; border-radius: 8px; font-weight: bold; text-align: center; margin-bottom: 12px; font-size: 15px; }
+        .day-total-box { background: linear-gradient(135deg,#27ae60,#2ecc71); color: white; padding: 10px; border-radius: 8px; font-weight: bold; text-align: center; margin-bottom: 12px; font-size: 14px; display: none; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .divider { height: 1px; background: var(--border); margin: 8px 0 12px; }
+        .badge { display: inline-block; background: var(--accent); color: white; border-radius: 12px; font-size: 10px; padding: 2px 7px; margin-left: 4px; vertical-align: middle; }
+        .badge-green { background: var(--success); }
+        .master-item { display: flex; justify-content: space-between; align-items: center; padding: 9px 4px; border-bottom: 1px solid #f0f0f0; font-size: 13px; gap: 8px; }
+        .master-item:last-child { border-bottom: none; }
+        .master-item-info { flex: 1; }
+        .master-item-btns { display: flex; gap: 5px; flex-shrink: 0; }
+        /* PDF range */
+        .pdf-range { background: #eef3fb; border-radius: 10px; padding: 14px; margin-top: 10px; }
+        .pdf-range-block { margin-bottom: 10px; }
+        .pdf-range-block:last-child { margin-bottom: 0; }
+        .pdf-range-title { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+        .pdf-range .row2 input { margin-bottom: 0; }
+        /* Item entry row */
+        .item-entry-row { background: #f8faff; border: 1px solid #d0e3ff; border-radius: 10px; padding: 11px; margin-bottom: 10px; position: relative; }
+        .item-entry-row .remove-item-btn { position: absolute; top: 8px; right: 8px; background: var(--danger); color: white; border: none; border-radius: 6px; padding: 3px 8px; font-size: 12px; cursor: pointer; }
+        /* Gen work entry row */
+        .gen-entry-row { background: #f0fdf4; border: 1px solid #a8d5b5; border-radius: 10px; padding: 11px; margin-bottom: 10px; position: relative; }
+        .gen-entry-row .remove-gen-btn { position: absolute; top: 8px; right: 8px; background: var(--danger); color: white; border: none; border-radius: 6px; padding: 3px 8px; font-size: 12px; cursor: pointer; }
+        .gen-entry-row .gen-row-label { font-size: 11px; font-weight: 700; color: var(--success); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .calc-preview { background: #e8f5e9; border-radius: 6px; padding: 8px; font-size: 12px; color: #1a7a3a; font-weight: bold; margin-top: 2px; margin-bottom: 8px; text-align: center; display: none; }
+        .gen-preview-row { background: #fff3cd; border-radius: 6px; padding: 8px; font-size: 12px; color: #856404; font-weight: bold; text-align: center; margin-top: 2px; margin-bottom: 0; display: none; }
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: white; border-radius: 14px; padding: 20px; width: 92%; max-width: 400px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
+        .modal h3 { margin: 0 0 14px; color: var(--accent); font-size: 15px; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 5px; }
+        .modal-btns button { flex: 1; }
+        .leave-badge { display: inline-block; background: #e74c3c; color: white; border-radius: 6px; font-size: 11px; padding: 2px 8px; }
+        /* Stats Cards */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+        .stat-card { border-radius: 10px; padding: 10px 12px; text-align: center; }
+        .stat-card .s-val { font-size: 18px; font-weight: 800; display: block; line-height: 1.2; }
+        .stat-card .s-lbl { font-size: 10px; font-weight: 600; opacity: 0.85; display: block; margin-top: 2px; }
+        .sc-blue  { background: linear-gradient(135deg,#1a73e8,#4fa3ff); color: #fff; }
+        .sc-green { background: linear-gradient(135deg,#27ae60,#2ecc71); color: #fff; }
+        .sc-orange{ background: linear-gradient(135deg,#e67e22,#f39c12); color: #fff; }
+        .sc-purple{ background: linear-gradient(135deg,#8e44ad,#b06fdf); color: #fff; }
+        /* Chart */
+        .chart-card { background: var(--card); border-radius: 12px; padding: 12px; margin-bottom: 14px; border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.06); display:none; }
+        .chart-card h3 { font-size: 13px; color: var(--accent); margin: 0 0 10px; font-weight: 700; }
+        .chart-legend { display: flex; gap: 14px; justify-content: center; margin-bottom: 8px; font-size: 11px; font-weight: 600; }
+        .leg-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: middle; }
+        /* Colored Table Headers */
+        th.th-date  { background: #1a73e8 !important; }
+        th.th-desc  { background: #7b2d8b !important; }
+        th.th-cyc   { background: #17a2b8 !important; }
+        th.th-qty   { background: #e67e22 !important; }
+        th.th-hrs   { background: #8e44ad !important; }
+        th.th-inout { background: #2980b9 !important; }
+        th.th-brk   { background: #c0392b !important; }
+        th.th-ink   { background: #27ae60 !important; }
+        th.th-act   { background: #555 !important; }
+        td.td-date  { background: #eef6ff !important; color: #1a73e8; font-weight: 700; font-size: 11px; }
+        td.td-ink   { background: #edfff3 !important; color: #1a7a3a; font-weight: 800; }
+        td.td-type-item { background: #fff8f0 !important; }
+        td.td-type-gen  { background: #f0fff4 !important; }
+        td.td-type-leave{ background: #fff0f0 !important; }
+    </style>
+</head>
+<body>
+
+<div class="app-header">
+    <h1>🔩 DRISHTI FLANGES AND METAL</h1>
+    <p>Operator: KRUSHNDEVBHAI &nbsp;|&nbsp; Production Tracker</p>
+</div>
+
+<div class="container">
+
+    <!-- ===== ENTRY ===== -->
+    <div id="entry" class="content-section active">
+        <h2 style="margin-top:12px;">📝 Daily Entry</h2>
+        <div class="card">
+            <div class="date-strip">
+                <button class="date-nav-btn" onclick="changeDate(-1)">‹</button>
+                <input type="date" id="entryDate" onchange="loadDayTotal()">
+                <button class="date-nav-btn" onclick="changeDate(1)">›</button>
+            </div>
+            <div class="compact-row">
+                <div><label>In Time</label><input type="time" id="inTime"></div>
+                <div><label>Out Time</label><input type="time" id="outTime"></div>
+                <div><label>Break(Hr)</label><input type="number" id="breakTime" step="0.1" value="0" placeholder="0"></div>
+                <div>
+                    <label>Leave</label>
+                    <select id="leaveSelect">
+                        <option value="">--</option>
+                        <option value="Personal Leave">Personal</option>
+                        <option value="Holiday Leave">Holiday</option>
+                        <option value="Sick Leave">Sick</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="day-total-box" id="dayTotalBox"></div>
+
+        <div id="itemEntriesContainer"></div>
+        <button class="btn btn-primary" onclick="addItemEntryRow()" style="margin-bottom:12px;">➕ Item ઉમેરો (Add Item)</button>
+
+        <div id="genEntriesContainer"></div>
+        <button class="btn btn-teal" onclick="addGenEntryRow()" style="margin-bottom:12px;">🛠️ General Work ઉમેરો (Add Work)</button>
+
+        <button class="btn btn-success" id="btnSave">💾 Save Daily Record</button>
+    </div>
+
+    <!-- ===== REPORT ===== -->
+    <div id="report" class="content-section">
+        <h2 style="margin-top:12px;">📊 Report & Summary</h2>
+
+        <div class="card">
+            <h3>Date Range Filter</h3>
+            <div class="row2">
+                <div><label>From</label><input type="date" id="repFrom"></div>
+                <div><label>To</label><input type="date" id="repTo"></div>
+            </div>
+            <button onclick="loadReport()" class="btn btn-primary">🔍 View Report</button>
+        </div>
+
+        <div id="grandTotalDisplay" class="total-box" style="display:none;">Grand Total: ₹ 0.00</div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid" id="statsGrid" style="display:none;">
+            <div class="stat-card sc-blue">
+                <span class="s-val" id="statAvg">₹0</span>
+                <span class="s-lbl">📅 Average/Day</span>
+            </div>
+            <div class="stat-card sc-green">
+                <span class="s-val" id="statDays">0</span>
+                <span class="s-lbl">🗓️ Days Worked</span>
+            </div>
+            <div class="stat-card sc-orange">
+                <span class="s-val" id="statItem">₹0</span>
+                <span class="s-lbl">⚙️ Item Income</span>
+            </div>
+            <div class="stat-card sc-purple">
+                <span class="s-val" id="statGen">₹0</span>
+                <span class="s-lbl">🛠️ General Income</span>
+            </div>
+        </div>
+
+        <!-- Day-wise Income Chart -->
+        <div class="chart-card" id="chartCard">
+            <h3>📊 Day-wise Income Chart</h3>
+            <div class="chart-legend">
+                <span><span class="leg-dot" style="background:#1a73e8;"></span>Item Income</span>
+                <span><span class="leg-dot" style="background:#27ae60;"></span>General Work</span>
+            </div>
+            <div style="position:relative;height:220px;">
+                <canvas id="incomeChart"></canvas>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="th-date">Date</th>
+                        <th class="th-desc">Description</th>
+                        <th class="th-cyc">Cyc(s)</th>
+                        <th class="th-qty">Qty</th>
+                        <th class="th-hrs">Hrs</th>
+                        <th class="th-inout">In-Out</th>
+                        <th class="th-brk">Brk</th>
+                        <th class="th-ink">Inkam/Day(₹)</th>
+                        <th class="th-act">✕</th>
+                    </tr>
+                </thead>
+                <tbody id="reportData">
+                    <tr><td colspan="9" style="color:var(--muted);padding:20px;">Select date range and tap View Report</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>📋 Category Summary</h3>
+            <div class="table-wrapper" style="margin-bottom:0;">
+                <table>
+                    <thead><tr><th>Category</th><th>Description</th><th>Total</th></tr></thead>
+                    <tbody id="summaryData">
+                        <tr><td colspan="3" style="color:var(--muted);padding:15px;">Load report to see summary</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📥 Download PDF Report</h3>
+            <p style="font-size:12px;color:var(--muted);margin:0 0 10px;">Production & Leave date range અલગ સેટ કરી શકો.</p>
+            <div class="pdf-range">
+                <div class="pdf-range-block">
+                    <div class="pdf-range-title">⚙️ Production Data</div>
+                    <div class="row2">
+                        <div><label>From</label><input type="date" id="pdfFrom"></div>
+                        <div><label>To</label><input type="date" id="pdfTo"></div>
+                    </div>
+                </div>
+                <div class="pdf-range-block">
+                    <div class="pdf-range-title">🏖️ Leave / Break</div>
+                    <div class="row2">
+                        <div><label>From</label><input type="date" id="pdfLeaveFrom"></div>
+                        <div><label>To</label><input type="date" id="pdfLeaveTo"></div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="generateAdvancedPDF()" class="btn btn-orange" style="margin-top:10px;">📄 Generate & Download PDF</button>
+        </div>
+    </div>
+
+    <!-- ===== SETTINGS ===== -->
+    <div id="settings" class="content-section">
+        <h2 style="margin-top:12px;">⚙️ Settings</h2>
+
+        <div class="card">
+            <h3>⚙️ Production Items</h3>
+            <label>Item Name</label>
+            <input type="text" id="mItemName" placeholder="e.g. Flange 4-inch">
+            <div class="row2">
+                <div>
+                    <label>Cycle Time (seconds)</label>
+                    <input type="number" id="mItemCycle" placeholder="e.g. 45">
+                </div>
+                <div>
+                    <label>Bhav / Rate (₹/piece)</label>
+                    <input type="number" id="mItemRate" step="0.01" placeholder="e.g. 12.50">
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="addItemMaster()">➕ Add Item</button>
+            <div class="divider"></div>
+            <div id="masterItemList"><p style="color:var(--muted);font-size:13px;">No items added yet.</p></div>
+        </div>
+
+        <div class="card">
+            <h3>🛠️ General Work Types</h3>
+            <div style="background:#eef3fb;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:var(--accent);">
+                ℹ️ General Work rate: <strong>₹38.33 per hour</strong>
+            </div>
+            <label>Work Name</label>
+            <input type="text" id="mGenName" placeholder="e.g. Cleaning, Maintenance">
+            <button class="btn btn-grey" onclick="addGenMaster()">➕ Add Work Type</button>
+            <div class="divider"></div>
+            <div id="masterGenList"><p style="color:var(--muted);font-size:13px;">No work types added yet.</p></div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+    <button class="nav-btn active" onclick="showTab('entry', this)"><span>📝</span>Entry</button>
+    <button class="nav-btn" onclick="showTab('report', this)"><span>📊</span>Report</button>
+    <button class="nav-btn" onclick="showTab('settings', this)"><span>⚙️</span>Settings</button>
+</div>
+
+<!-- Edit Item Master Modal -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <h3>✏️ Edit Item</h3>
+        <input type="hidden" id="editItemId">
+        <label>Item Name</label>
+        <input type="text" id="editItemName" placeholder="Item Name">
+        <div class="row2">
+            <div>
+                <label>Cycle Time (s)</label>
+                <input type="number" id="editItemCycle" placeholder="Cycle">
+            </div>
+            <div>
+                <label>Bhav / Rate (₹)</label>
+                <input type="number" id="editItemRate" step="0.01" placeholder="Rate">
+            </div>
+        </div>
+        <div class="modal-btns">
+            <button class="btn btn-primary" onclick="saveEditItem()">💾 Save</button>
+            <button class="btn btn-grey" onclick="closeEditModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Gen Master Modal -->
+<div class="modal-overlay" id="editGenModal">
+    <div class="modal">
+        <h3>✏️ Edit General Work</h3>
+        <input type="hidden" id="editGenId">
+        <label>Work Name</label>
+        <input type="text" id="editGenName" placeholder="Work Name">
+        <div style="background:#eef3fb;border-radius:8px;padding:8px;margin-bottom:12px;font-size:12px;color:var(--accent);">
+            Rate fixed: <strong>₹38.33/hr</strong>
+        </div>
+        <div class="modal-btns">
+            <button class="btn btn-primary" onclick="saveEditGen()">💾 Save</button>
+            <button class="btn btn-grey" onclick="closeEditGenModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Entry Modal -->
+<div class="modal-overlay" id="editEntryModal">
+    <div class="modal" style="max-width:420px;">
+        <h3>✏️ Edit Entry</h3>
+        <input type="hidden" id="editEntryId">
+        <input type="hidden" id="editEntryType">
+        <label>Date</label>
+        <input type="date" id="editEntryDate">
+
+        <div class="row2" style="margin-bottom:4px;">
+            <div>
+                <label>In Time</label>
+                <input type="time" id="editInTime">
+            </div>
+            <div>
+                <label>Out Time</label>
+                <input type="time" id="editOutTime">
+            </div>
+        </div>
+
+        <div id="editItemSection" style="display:none;">
+            <label>Item Name</label>
+            <input type="text" id="editEntryItemName" readonly style="background:#f0f0f0;">
+            <div class="row2">
+                <div>
+                    <label>Cycle Time (s)</label>
+                    <input type="number" id="editEntryCycle" readonly style="background:#f0f0f0;">
+                </div>
+                <div>
+                    <label>Bhav/Piece (₹)</label>
+                    <input type="number" id="editEntryRate" readonly style="background:#f0f0f0;">
+                </div>
+            </div>
+            <label>Qty (Pieces)</label>
+            <input type="number" id="editEntryQty" oninput="calcEditPreview()">
+            <div class="calc-preview" id="editItemPreview"></div>
+            <label>Notes (Optional)</label>
+            <input type="text" id="editEntryNotes" placeholder="Notes...">
+        </div>
+
+        <div id="editGenSection" style="display:none;">
+            <label>Work Name</label>
+            <input type="text" id="editGenWorkName" readonly style="background:#f0f0f0;">
+            <label>Hours <span style="font-size:10px;font-weight:400;color:var(--muted);">(e.g. 1.5 = 1hr 30min)</span></label>
+            <input type="number" id="editGenHrs" step="0.1" min="0" placeholder="e.g. 1.5" oninput="calcEditGenPreview()">
+            <div class="calc-preview" id="editGenPreview" style="display:none;"></div>
+            <label>Notes (Optional)</label>
+            <input type="text" id="editGenNotes" placeholder="Notes...">
+        </div>
+
+        <div class="modal-btns">
+            <button class="btn btn-primary" onclick="saveEditEntry()">💾 Save Changes</button>
+            <button class="btn btn-grey" onclick="closeEditEntryModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where }
+        from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyB676eb2-LG2Kab2jrE3iwuhDeNcolxi2w",
+        authDomain: "attendance-cnc-d2b63.firebaseapp.com",
+        projectId: "attendance-cnc-d2b63",
+        storageBucket: "attendance-cnc-d2b63.firebasestorage.app",
+        messagingSenderId: "326038097406",
+        appId: "1:326038097406:web:de7cb32b17b8252af104af"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+    window.db   = db;
+    window.fLib = { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where };
+
+    const now      = new Date();
+    const pad      = n => String(n).padStart(2,'0');
+    const todayStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+    const firstDay = `${now.getFullYear()}-${pad(now.getMonth()+1)}-01`;
+    const lastDay  = (() => { const d=new Date(now.getFullYear(),now.getMonth()+1,0); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; })();
+
+    document.getElementById('entryDate').value    = todayStr;
+    document.getElementById('repFrom').value      = firstDay;
+    document.getElementById('repTo').value        = lastDay;
+    document.getElementById('pdfFrom').value      = firstDay;
+    document.getElementById('pdfTo').value        = lastDay;
+    document.getElementById('pdfLeaveFrom').value = firstDay;
+    document.getElementById('pdfLeaveTo').value   = lastDay;
+
+    window.syncData();
+</script>
+
+<script>
+    let items_db = [], gens_db = [];
+    const GEN_RATE  = 38.33;
+    const DELETE_PASS = "0000";
+    const OPERATOR    = "KRUSHNDEVBHAI";
+    let itemRowCount = 0, genRowCount = 0;
+    let incomeChartObj = null;
+
+    /* ===== TAB ===== */
+    window.showTab = (id, btn) => {
+        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    };
+
+    window.changeDate = delta => {
+        const inp = document.getElementById('entryDate');
+        let d = inp.value
+            ? (() => { const [y,m,day]=inp.value.split('-').map(Number); return new Date(y,m-1,day); })()
+            : new Date();
+        d.setDate(d.getDate()+delta);
+        const pad = n => String(n).padStart(2,'0');
+        inp.value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+        loadDayTotal();
+    };
+
+    /* ===== ITEM ENTRY ROW (AUTO-FILL CYCLE & BHAV FROM SETTINGS) ===== */
+    window.autoFillRow = rowId => {
+        const idx = document.getElementById(`itemSel_${rowId}`).value;
+        if (idx === "") {
+            document.getElementById(`cycleSel_${rowId}`).value = "";
+            document.getElementById(`rateSel_${rowId}`).value  = "";
+            document.getElementById(`cyclePreview_${rowId}`).style.display = 'none';
+            return;
+        }
+        const item = items_db[parseInt(idx)];
+        document.getElementById(`cycleSel_${rowId}`).value = item.cycle || "";
+        document.getElementById(`rateSel_${rowId}`).value  = item.rate ? parseFloat(item.rate).toFixed(4) : "0";
+        calcRowPreview(rowId);
+    };
+
+    window.calcRowPreview = rowId => {
+        const idx = document.getElementById(`itemSel_${rowId}`).value;
+        if (idx === "") { document.getElementById(`cyclePreview_${rowId}`).style.display = 'none'; return; }
+        const item  = items_db[parseInt(idx)];
+        const cycle = item.cycle || 0;
+        const rate  = parseFloat(item.rate || 0);
+        const qty   = parseFloat(document.getElementById(`qty_${rowId}`).value || 0);
+        const prev  = document.getElementById(`cyclePreview_${rowId}`);
+        prev.style.display = 'block';
+        const totalStr = qty > 0 ? ` | 📦 ${qty} pcs = ₹${(rate*qty).toFixed(2)}` : '';
+        prev.textContent = `⏱ Cycle: ${cycle}s | 💰 ₹${rate.toFixed(4)}/pc${totalStr}`;
+    };
+
+    window.addItemEntryRow = () => {
+        itemRowCount++;
+        const id  = itemRowCount;
+        const opts = items_db.map((it,i) =>
+            `<option value="${i}">${it.name}${it.rate ? ' (₹'+parseFloat(it.rate).toFixed(2)+'/pc)' : ''}</option>`
+        ).join('');
+        document.getElementById('itemEntriesContainer').insertAdjacentHTML('beforeend', `
+        <div class="item-entry-row" id="itemRow_${id}">
+            <button class="remove-item-btn" onclick="removeItemRow(${id})">✕</button>
+            <label>Item</label>
+            <select id="itemSel_${id}" onchange="autoFillRow(${id})" style="margin-bottom:8px;">
+                <option value="">-- Select Item --</option>${opts}
+            </select>
+            <div class="row2" style="margin-bottom:4px;">
+                <div>
+                    <label style="font-size:10px;color:#888;">Cycle Time (s)</label>
+                    <input type="number" id="cycleSel_${id}" readonly style="margin-bottom:4px;">
+                </div>
+                <div>
+                    <label style="font-size:10px;color:#888;">Bhav/Piece (₹)</label>
+                    <input type="number" id="rateSel_${id}" readonly style="margin-bottom:4px;">
+                </div>
+            </div>
+            <label>Qty (Pieces)</label>
+            <input type="number" id="qty_${id}" min="0" placeholder="0" oninput="calcRowPreview(${id})" style="margin-bottom:6px;">
+            <div class="calc-preview" id="cyclePreview_${id}"></div>
+            <label style="margin-top:2px;">📝 Notes <span style="font-size:10px;color:#888;font-weight:400;">(Optional)</span></label>
+            <input type="text" id="itemNotes_${id}" placeholder="e.g. Special order, rework..." style="margin-bottom:0;">
+        </div>`);
+    };
+    window.removeItemRow = id => { const el=document.getElementById(`itemRow_${id}`); if(el) el.remove(); };
+
+    /* ===== GEN WORK ROW ===== */
+    window.calcGenRowPreview = rowId => {
+        const h   = parseFloat(document.getElementById(`genHrs_${rowId}`).value || 0);
+        const amt = h * GEN_RATE;
+        const prev = document.getElementById(`genRowPreview_${rowId}`);
+        if (h > 0) { prev.style.display='block'; prev.textContent=`⏱ ${h} hr = ₹${amt.toFixed(2)}`; }
+        else prev.style.display = 'none';
+    };
+
+    window.addGenEntryRow = () => {
+        genRowCount++;
+        const id   = genRowCount;
+        const opts = gens_db.map((gn,i) => `<option value="${i}">${gn.name}</option>`).join('');
+        document.getElementById('genEntriesContainer').insertAdjacentHTML('beforeend', `
+        <div class="gen-entry-row" id="genRow_${id}">
+            <button class="remove-gen-btn" onclick="removeGenRow(${id})">✕</button>
+            <div class="gen-row-label">🛠️ General Work <span style="font-size:10px;color:var(--success);font-weight:400;">— ₹38.33/hr</span></div>
+            <label>Work Type</label>
+            <select id="genSel_${id}" style="margin-bottom:8px;"><option value="">-- Select Work --</option>${opts}</select>
+            <label>Hours <span style="font-size:10px;color:#888;font-weight:400;">(decimal OK — e.g. 1.5 = 1hr 30min)</span></label>
+            <input type="number" id="genHrs_${id}" step="0.1" min="0" placeholder="e.g. 1.5" oninput="calcGenRowPreview(${id})" style="margin-bottom:4px;">
+            <div class="gen-preview-row" id="genRowPreview_${id}"></div>
+            <label style="margin-top:6px;">📝 Notes (Optional)</label>
+            <input type="text" id="genNotes_${id}" placeholder="e.g. Machine cleaning, Tool setup..." style="margin-bottom:0;">
+        </div>`);
+    };
+    window.removeGenRow = id => { const el=document.getElementById(`genRow_${id}`); if(el) el.remove(); };
+
+    /* ===== SYNC ===== */
+    window.syncData = async () => {
+        if (!window.fLib) return setTimeout(window.syncData, 500);
+        const iSnap = await window.fLib.getDocs(window.fLib.collection(window.db, "items"));
+        items_db = iSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => a.name.localeCompare(b.name));
+
+        const gSnap = await window.fLib.getDocs(window.fLib.collection(window.db, "gen_master"));
+        gens_db = gSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => a.name.localeCompare(b.name));
+
+        document.getElementById('masterItemList').innerHTML = items_db.length
+            ? items_db.map(it => `
+                <div class="master-item">
+                    <div class="master-item-info">
+                        <strong>${it.name}</strong>
+                        ${it.cycle ? `<span class="badge">${it.cycle}s</span>` : ''}
+                        ${it.rate  ? `<span class="badge badge-green">₹${parseFloat(it.rate).toFixed(2)}/pc</span>` : ''}
+                    </div>
+                    <div class="master-item-btns">
+                        <button class="btn-edit" onclick="openEditItem('${it.id}')">Edit</button>
+                        <button class="btn-del" onclick="deleteMasterItem('${it.id}')">Delete</button>
+                    </div>
+                </div>`).join('')
+            : '<p style="color:var(--muted);font-size:13px;">No items added yet.</p>';
+
+        document.getElementById('masterGenList').innerHTML = gens_db.length
+            ? gens_db.map(gn => `
+                <div class="master-item">
+                    <div class="master-item-info">
+                        <strong>${gn.name}</strong>
+                        <span class="badge badge-green">₹38.33/hr</span>
+                    </div>
+                    <div class="master-item-btns">
+                        <button class="btn-edit" onclick="openEditGen('${gn.id}')">Edit</button>
+                        <button class="btn-del" onclick="deleteGenMaster('${gn.id}')">Delete</button>
+                    </div>
+                </div>`).join('')
+            : '<p style="color:var(--muted);font-size:13px;">No work types added yet.</p>';
+
+        const td = document.getElementById('entryDate');
+        if (!td.value) { const n=new Date(); const pad=x=>String(x).padStart(2,'0'); td.value=`${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())}`; }
+        loadDayTotal();
+    };
+
+    /* ===== DAY TOTAL ===== */
+    window.loadDayTotal = async () => {
+        if (!window.fLib) return;
+        const date = document.getElementById('entryDate').value;
+        if (!date) return;
+        const snap = await window.fLib.getDocs(
+            window.fLib.query(window.fLib.collection(window.db,"production_entries"), window.fLib.where("date","==",date))
+        );
+        const entries = snap.docs.map(d => d.data());
+        let tot = 0;
+        entries.forEach(e => {
+            if (e.type === 'item') {
+                tot += e.amt ? parseFloat(e.amt) : (parseFloat(e.qty||0) * parseFloat(e.rate||0));
+            } else if (e.type === 'general') {
+                tot += e.amt ? parseFloat(e.amt) : (parseFloat(e.hrs||0) * GEN_RATE);
+            }
+        });
+        const box = document.getElementById('dayTotalBox');
+        if (entries.length > 0) {
+            box.style.display = 'block';
+            box.textContent = `📅 ${date.split('-').reverse().join('-')} — Today's Inkam: ₹${tot.toFixed(2)}`;
+        } else {
+            box.style.display = 'none';
+        }
+    };
+
+    /* ===== SAVE ===== */
+    document.getElementById('btnSave').onclick = async () => {
+        const date   = document.getElementById('entryDate').value;
+        const leave  = document.getElementById('leaveSelect').value;
+        const inTime = document.getElementById('inTime').value;
+        const outTime= document.getElementById('outTime').value;
+        const brk    = parseFloat(document.getElementById('breakTime').value || 0);
+        if (!date) return alert("Please select a date.");
+
+        if (leave) {
+            const snap = await window.fLib.getDocs(
+                window.fLib.query(window.fLib.collection(window.db,"production_entries"), window.fLib.where("date","==",date))
+            );
+            if (!snap.empty) return alert("⚠️ Entry already exists on this date. Cannot add leave.");
+            await window.fLib.addDoc(window.fLib.collection(window.db,"production_entries"), {
+                date, type: "leave", name: leave, inTime: "", outTime: "", breakTime: 0
+            });
+            alert("✅ Leave saved!");
+            resetEntryForm(date);
+            loadDayTotal();
+            return;
+        }
+
+        // Collect item rows
+        let savedCount = 0;
+        const itemRows = document.querySelectorAll('[id^="itemRow_"]');
+        for (const row of itemRows) {
+            const rowId = row.id.replace('itemRow_', '');
+            const idx   = document.getElementById(`itemSel_${rowId}`).value;
+            if (idx === "") continue;
+            const item  = items_db[parseInt(idx)];
+            const qty   = parseFloat(document.getElementById(`qty_${rowId}`).value || 0);
+            const notes = document.getElementById(`itemNotes_${rowId}`).value.trim();
+            const rate  = parseFloat(item.rate || 0);
+            const amt   = parseFloat((rate * qty).toFixed(2));
+            await window.fLib.addDoc(window.fLib.collection(window.db,"production_entries"), {
+                date, inTime, outTime, breakTime: brk,
+                type: "item", name: item.name, cycle: item.cycle || 0,
+                rate, qty, amt, notes
+            });
+            savedCount++;
+        }
+
+        // Collect gen rows
+        const genRows = document.querySelectorAll('[id^="genRow_"]');
+        for (const row of genRows) {
+            const rowId = row.id.replace('genRow_', '');
+            const idx   = document.getElementById(`genSel_${rowId}`).value;
+            if (idx === "") continue;
+            const gen   = gens_db[parseInt(idx)];
+            const hrs   = parseFloat(document.getElementById(`genHrs_${rowId}`).value || 0);
+            const notes = document.getElementById(`genNotes_${rowId}`).value.trim();
+            const amt   = parseFloat((hrs * GEN_RATE).toFixed(2));
+            await window.fLib.addDoc(window.fLib.collection(window.db,"production_entries"), {
+                date, inTime, outTime, breakTime: brk,
+                type: "general", name: gen.name, hrs, amt, notes
+            });
+            savedCount++;
+        }
+
+        if (savedCount === 0) return alert("Please add at least one Item or General Work entry.");
+        alert(`✅ ${savedCount} record(s) saved successfully!`);
+        resetEntryForm(date);
+        loadDayTotal();
+    };
+
+    function resetEntryForm(keepDate) {
+        document.getElementById('leaveSelect').value = "";
+        document.getElementById('inTime').value      = "";
+        document.getElementById('outTime').value     = "";
+        document.getElementById('breakTime').value   = "0";
+        document.getElementById('entryDate').value   = keepDate || "";
+        document.getElementById('itemEntriesContainer').innerHTML = "";
+        document.getElementById('genEntriesContainer').innerHTML  = "";
+        itemRowCount = 0; genRowCount = 0;
+    }
+
+    /* ===== REPORT ===== */
+    window.loadReport = async () => {
+        const f = document.getElementById('repFrom').value;
+        const t = document.getElementById('repTo').value;
+        const snap = await window.fLib.getDocs(window.fLib.collection(window.db,"production_entries"));
+        let data = snap.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .filter(d => (f && t) ? (d.date >= f && d.date <= t) : true)
+            .sort((a,b) => a.date.localeCompare(b.date));
+
+        let dailyHtml = "";
+        let itemsSum  = {};
+        let gensSum   = {};
+        let totalRs   = 0;
+        let grouped   = {};
+        let dayLabels = [], dayItemArr = [], dayGenArr = [];
+
+        data.forEach(d => { if (!grouped[d.date]) grouped[d.date] = []; grouped[d.date].push(d); });
+
+        const fmtDate = d => { const [y,m,day]=d.split('-'); return `${day.padStart(2,'0')}-${m.padStart(2,'0')}-${y}`; };
+        let totalItemRs = 0, totalGenRs = 0, daysWorked = 0;
+
+        Object.keys(grouped).sort().forEach(date => {
+            const entries   = grouped[date];
+            const inT       = entries.map(e => e.inTime).filter(x => x).sort()[0] || "";
+            const outT      = entries.map(e => e.outTime).filter(x => x).sort().reverse()[0] || "";
+            const dayBreak  = entries.reduce((s,e) => s + (parseFloat(e.breakTime)||0), 0);
+
+            let dayInkam = 0, dayItem = 0, dayGen = 0;
+            const isWorkDay = entries.some(e => e.type !== "leave");
+            if (isWorkDay) daysWorked++;
+
+            entries.forEach(e => {
+                const inkam = e.amt !== undefined ? parseFloat(e.amt) :
+                    (e.type==='item' ? parseFloat(e.qty||0)*parseFloat(e.rate||0) :
+                    (e.type==='general' ? parseFloat(e.hrs||0)*GEN_RATE : 0));
+                if (e.type==='item')    { dayItem += inkam; totalItemRs += inkam; }
+                if (e.type==='general') { dayGen  += inkam; totalGenRs  += inkam; }
+                dayInkam += inkam;
+            });
+            if (isWorkDay) {
+                totalRs += dayInkam;
+                dayLabels.push(fmtDate(date));
+                dayItemArr.push(parseFloat(dayItem.toFixed(2)));
+                dayGenArr.push(parseFloat(dayGen.toFixed(2)));
+            }
+
+            entries.forEach((d, i) => {
+                if (d.type==='item') {
+                    const iKey = d.name + '||' + (d.cycle||0);
+                    if (!itemsSum[iKey]) itemsSum[iKey] = { name:d.name, qty:0, cycle:d.cycle||0, rate:parseFloat(d.rate||0) };
+                    itemsSum[iKey].qty += parseFloat(d.qty||0);
+                } else if (d.type==='general') {
+                    if (!gensSum[d.name]) gensSum[d.name] = 0;
+                    gensSum[d.name] += parseFloat(d.hrs||0);
+                }
+
+                const isLeave = d.type==='leave';
+                const inkam   = d.amt !== undefined ? parseFloat(d.amt) :
+                    (d.type==='item' ? parseFloat(d.qty||0)*parseFloat(d.rate||0) :
+                    (d.type==='general' ? parseFloat(d.hrs||0)*GEN_RATE : 0));
+                const cycDisp = d.type==='item'    ? (d.cycle||'') : '';
+                const qtyDisp = d.type==='item'    ? (d.qty!==undefined ? d.qty : '') : '';
+                const hrsDisp = d.type==='general' ? (parseFloat(d.hrs||0)||'') : '';
+
+                const rowClass = isLeave ? 'td-type-leave' : (d.type==='item' ? 'td-type-item' : 'td-type-gen');
+                const inkamCell = i===0
+                    ? `<td rowspan="${entries.length}" class="td-ink" style="vertical-align:middle;">${dayInkam>0?'₹'+dayInkam.toFixed(2):''}</td>`
+                    : '';
+                const actCell = `<td style="white-space:nowrap;">
+                    <button class="btn-edit" style="margin-bottom:3px;" onclick="openEditEntry('${d.id}')">✏️</button>
+                    <button class="btn-del" onclick="deleteEntry('${d.id}')">✕</button>
+                </td>`;
+
+                dailyHtml += `<tr>
+                    <td class="${i===0?'td-date':''}">${i===0 ? fmtDate(date) : ''}</td>
+                    <td class="${rowClass}" style="text-align:left;">
+                        ${isLeave ? `<span class="leave-badge">${d.name}</span>` : d.name}
+                        ${d.notes ? `<br><em style="font-size:10px;color:var(--muted);">${d.notes}</em>` : ''}
+                    </td>
+                    <td>${cycDisp}</td>
+                    <td>${qtyDisp}</td>
+                    <td>${hrsDisp}</td>
+                    <td>${i===0 ? (inT+(inT?'-':'')+outT) : ''}</td>
+                    <td>${i===0 ? (dayBreak>0?dayBreak:'') : ''}</td>
+                    ${inkamCell}
+                    ${actCell}
+                </tr>`;
+            });
+        });
+
+        document.getElementById('reportData').innerHTML = dailyHtml ||
+            '<tr><td colspan="9" style="color:var(--muted);padding:20px;">No records found for this period.</td></tr>';
+
+        const totalBox = document.getElementById('grandTotalDisplay');
+        totalBox.style.display = 'block';
+        totalBox.textContent = `કુલ આવક (Total Inkam): ₹ ${totalRs.toFixed(2)}`;
+
+        // Stats
+        const sg = document.getElementById('statsGrid');
+        sg.style.display = 'grid';
+        document.getElementById('statAvg').textContent  = daysWorked>0 ? '₹'+Math.round(totalRs/daysWorked) : '₹0';
+        document.getElementById('statDays').textContent = daysWorked;
+        document.getElementById('statItem').textContent = '₹'+totalItemRs.toFixed(0);
+        document.getElementById('statGen').textContent  = '₹'+totalGenRs.toFixed(0);
+
+        // Chart
+        const cc = document.getElementById('chartCard');
+        if (dayLabels.length > 0) {
+            cc.style.display = 'block';
+            if (incomeChartObj) { incomeChartObj.destroy(); incomeChartObj = null; }
+            incomeChartObj = new Chart(document.getElementById('incomeChart'), {
+                type: 'bar',
+                data: {
+                    labels: dayLabels,
+                    datasets: [
+                        { label: 'Item Income', data: dayItemArr, backgroundColor: '#1a73e8', borderRadius: 4 },
+                        { label: 'General Work', data: dayGenArr, backgroundColor: '#27ae60', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { stacked: true, ticks: { font: { size: 9 }, maxRotation: 45 } },
+                        y: { stacked: true, ticks: { font: { size: 9 }, callback: v => '₹'+v } }
+                    }
+                }
+            });
+        } else {
+            cc.style.display = 'none';
+        }
+
+        // Summary
+        let sumHtml = `<tr class="summary-header"><td colspan="3">⚙️ Production Items</td></tr>`;
+        if (Object.keys(itemsSum).length) {
+            Object.keys(itemsSum)
+              .sort((a,b) => itemsSum[a].name.localeCompare(itemsSum[b].name) || (itemsSum[a].cycle - itemsSum[b].cycle))
+              .forEach(k => {
+                const it = itemsSum[k];
+                const inkam = it.rate>0 ? it.qty*it.rate : 0;
+                sumHtml += `<tr>
+                    <td>Item</td>
+                    <td style="text-align:left;">${it.name}
+                        ${it.cycle ? `<span class="badge">${it.cycle}s</span>` : ''}
+                        ${it.rate  ? `<span class="badge badge-green">₹${it.rate.toFixed(2)}/pc</span>` : ''}
+                    </td>
+                    <td><strong>${it.qty} Pcs</strong>${inkam>0?`<br><span style="color:#27ae60;">₹${inkam.toFixed(2)}</span>`:''}</td>
+                </tr>`;
+            });
+        } else {
+            sumHtml += `<tr><td colspan="3" style="color:var(--muted);">No production items in this period</td></tr>`;
+        }
+        sumHtml += `<tr class="summary-header"><td colspan="3">🛠️ General Work</td></tr>`;
+        if (Object.keys(gensSum).length) {
+            Object.keys(gensSum).sort((a,b)=>a.localeCompare(b)).forEach(k => {
+                const hrs = gensSum[k], amt = hrs*GEN_RATE;
+                sumHtml += `<tr>
+                    <td>Work</td>
+                    <td style="text-align:left;">${k}</td>
+                    <td><strong>${hrs.toFixed(2)} Hrs</strong><br><span style="color:#27ae60;">₹${amt.toFixed(2)}</span></td>
+                </tr>`;
+            });
+        } else {
+            sumHtml += `<tr><td colspan="3" style="color:var(--muted);">No general work in this period</td></tr>`;
+        }
+        document.getElementById('summaryData').innerHTML = sumHtml;
+    };
+
+    /* ===== DELETE ENTRY ===== */
+    window.deleteEntry = async id => {
+        const p = prompt("Enter password to delete:");
+        if (p === DELETE_PASS) {
+            await window.fLib.deleteDoc(window.fLib.doc(window.db,"production_entries",id));
+            loadReport(); loadDayTotal();
+        } else if (p !== null) alert("Incorrect password.");
+    };
+
+    /* ===== PDF ===== */
+    window.generateAdvancedPDF = async () => {
+        const pF = document.getElementById('pdfFrom').value;
+        const pT = document.getElementById('pdfTo').value;
+        const lF = document.getElementById('pdfLeaveFrom').value;
+        const lT = document.getElementById('pdfLeaveTo').value;
+        if (!pF || !pT || !lF || !lT) return alert("Please fill all PDF date range fields.");
+
+        const { jsPDF } = window.jspdf;
+        const doc  = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageW = doc.internal.pageSize.getWidth();
+
+        const snap = await window.fLib.getDocs(window.fLib.collection(window.db,"production_entries"));
+        const all  = snap.docs.map(d => d.data());
+
+        const prodData  = all.filter(d => d.date>=pF && d.date<=pT && d.type!=="leave").sort((a,b)=>a.date.localeCompare(b.date));
+        const leaveData = all.filter(d => d.date>=lF && d.date<=lT);
+
+        const totalBrk  = leaveData.reduce((s,e) => s+(parseFloat(e.breakTime)||0), 0);
+        const fmtDate   = d => { const [y,m,day]=d.split('-'); return `${day.padStart(2,'0')}-${m.padStart(2,'0')}-${y}`; };
+        const pLDates   = [...new Set(leaveData.filter(d=>d.name==="Personal Leave").map(d=>d.date))].sort();
+        const kLDates   = [...new Set(leaveData.filter(d=>d.name==="Holiday Leave").map(d=>d.date))].sort();
+        const pL = pLDates.length, kL = kLDates.length;
+        const pLStr = pLDates.map(fmtDate).join(', ') || '-';
+        const kLStr = kLDates.map(fmtDate).join(', ') || '-';
+
+        /* Header */
+        doc.setDrawColor(0); doc.setLineWidth(0.5); doc.rect(0,0,pageW,36);
+        doc.setTextColor(0); doc.setFontSize(16); doc.setFont(undefined,'bold');
+        doc.text("DRISHTI FLANGES AND METAL", pageW/2, 12, { align:"center" });
+        doc.setFontSize(9); doc.setFont(undefined,'normal');
+        doc.text("Production & Attendance Report", pageW/2, 20, { align:"center" });
+        doc.setFont(undefined,'bold');
+        doc.text("Operator: " + OPERATOR, pageW/2, 30, { align:"center" });
+        doc.setFont(undefined,'normal');
+
+        /* Summary Table */
+        const sumY = 42;
+        const rightX = pageW - 14;
+        doc.setFontSize(9); doc.setFont(undefined,'bold');
+        doc.text("Production:", rightX, sumY+8, { align:"right" });
+        doc.text("Leave/Break:", rightX, sumY+16, { align:"right" });
+        doc.text("Generated:", rightX, sumY+24, { align:"right" });
+        doc.setFont(undefined,'normal');
+        doc.text(`${pF.split('-').reverse().join('-')}  to  ${pT.split('-').reverse().join('-')}`, rightX-32, sumY+8, { align:"right" });
+        doc.text(`${lF.split('-').reverse().join('-')}  to  ${lT.split('-').reverse().join('-')}`, rightX-32, sumY+16, { align:"right" });
+        doc.text(new Date().toLocaleDateString('en-IN'), rightX-32, sumY+24, { align:"right" });
+
+        doc.autoTable({
+            startY: sumY,
+            head: [['Summary','Value']],
+            body: [
+                ['Personal Leave Days', pL],
+                ['Holiday Leave Days',  kL],
+                ['Total Break Hours',   totalBrk.toFixed(2)]
+            ],
+            tableWidth: 70, margin: { left:14 },
+            styles: { fontSize:8 },
+            columnStyles: { 0:{ cellWidth:55 }, 1:{ cellWidth:15, halign:'center' } },
+            headStyles: { fillColor:[220,220,220], textColor:[0,0,0], fontStyle:'bold' }
+        });
+
+        const afterSumY = doc.lastAutoTable.finalY + 10;
+
+        /* Main Production Table */
+        let rows = [], rowMeta = [], grouped = {};
+        const allProd = all.filter(d=>d.date>=pF&&d.date<=pT).sort((a,b)=>a.date.localeCompare(b.date));
+        allProd.forEach(d => { if (!grouped[d.date]) grouped[d.date]=[]; grouped[d.date].push(d); });
+
+        Object.keys(grouped).sort().forEach(date => {
+            const entries  = grouped[date];
+            const inT  = entries.map(e=>e.inTime).filter(x=>x).sort()[0] || "";
+            const outT = entries.map(e=>e.outTime).filter(x=>x).sort().reverse()[0] || "";
+            const dayBreak = entries.reduce((s,e)=>s+(parseFloat(e.breakTime)||0),0);
+            entries.forEach((d,i) => {
+                rowMeta.push(d.type==='leave'?'leave':'data');
+                rows.push([
+                    i===0 ? fmtDate(date) : "",
+                    d.name + (d.notes ? ` (${d.notes})` : ""),
+                    d.cycle || "",
+                    d.qty   || "",
+                    d.hrs   || "",
+                    i===0 ? (inT+(inT?"-":"")+outT) : "",
+                    i===0 ? (dayBreak>0?dayBreak:"") : ""
+                ]);
+            });
+        });
+
+        doc.autoTable({
+            startY: afterSumY,
+            head: [['Date','Description','Cyc(s)','Qty','Hrs','In-Out','Brk']],
+            body: rows,
+            margin: { left:14, right:14 },
+            tableWidth: pageW-28,
+            styles: { fontSize:8, halign:'center', cellPadding:{top:3,bottom:3,left:4,right:4} },
+            columnStyles: {
+                0:{halign:'center',cellWidth:22},
+                1:{halign:'left',cellWidth:68,cellPadding:{top:3,bottom:3,left:10,right:4}},
+                2:{cellWidth:16}, 3:{cellWidth:16}, 4:{cellWidth:16},
+                5:{cellWidth:28}, 6:{cellWidth:16}
+            },
+            headStyles: { fillColor:[220,220,220], textColor:[0,0,0], fontStyle:'bold', halign:'center' },
+            didParseCell: data => {
+                if (data.section==='body' && rowMeta[data.row.index]==='leave') {
+                    data.cell.styles.fillColor = [245,245,245];
+                    data.cell.styles.textColor = [80,80,80];
+                    data.cell.styles.fontStyle = 'italic';
+                }
+            }
+        });
+
+        /* Category Summary Table */
+        let iSum={}, gSum={};
+        prodData.forEach(d => {
+            if (d.type==='item')    { const iK=d.name+'||'+(d.cycle||0); if(!iSum[iK]) iSum[iK]={name:d.name,qty:0,cycle:d.cycle||0,rate:parseFloat(d.rate||0)}; iSum[iK].qty+=parseFloat(d.qty||0); }
+            if (d.type==='general') { if(!gSum[d.name]) gSum[d.name]=0; gSum[d.name]+=parseFloat(d.hrs||0); }
+        });
+        let catRows=[], catMeta=[];
+        catMeta.push('header'); catRows.push(['','Production Items','','']);
+        Object.keys(iSum).sort((a,b)=>iSum[a].name.localeCompare(iSum[b].name)||(iSum[a].cycle-iSum[b].cycle)).forEach(k => {
+            const it=iSum[k], inkam=it.rate>0?it.qty*it.rate:0;
+            catMeta.push('data');
+            catRows.push(['Item', it.name, `${it.cycle||'-'}s`, `${it.qty} Pcs`]);
+        });
+        catMeta.push('header'); catRows.push(['','General Work','','']);
+        Object.keys(gSum).sort((a,b)=>a.localeCompare(b)).forEach(k => {
+            const hrs=gSum[k], amt=hrs*GEN_RATE;
+            catMeta.push('data');
+            catRows.push(['Work', k, '', `${hrs.toFixed(2)} Hrs`]);
+        });
+
+        if (catRows.length > 2) {
+            doc.autoTable({
+                startY: doc.lastAutoTable.finalY + 10,
+                head: [['Category','Description','Cyc(s)','Qty / Hrs']],
+                body: catRows,
+                margin: { left:14 },
+                tableWidth: 'auto',
+                styles: { fontSize:9, halign:'center' },
+                columnStyles: { 1:{halign:'left'}, 2:{cellWidth:18,halign:'center'}, 3:{halign:'right'} },
+                headStyles: { fillColor:[220,220,220], textColor:[0,0,0], fontStyle:'bold' },
+                didParseCell: data => {
+                    if (data.section==='body' && catMeta[data.row.index]==='header') {
+                        data.cell.styles.fillColor=[240,240,240];
+                        data.cell.styles.fontStyle='bold';
+                        data.cell.styles.halign='center';
+                        if ([0,2,3].includes(data.column.index)) data.cell.text=[''];
+                    }
+                }
+            });
+        }
+
+        /* Footer */
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let i=1; i<=totalPages; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8); doc.setTextColor(150);
+            doc.text(`Page ${i} of ${totalPages}  |  DRISHTI FLANGES AND METAL  |  Operator: ${OPERATOR}`, pageW/2, 290, { align:'center' });
+        }
+        doc.save(`DFM_Report_${pF}_to_${pT}.pdf`);
+    };
+
+    /* ===== MASTERS ===== */
+    window.addItemMaster = async () => {
+        const n = document.getElementById('mItemName').value.trim();
+        const c = document.getElementById('mItemCycle').value.trim();
+        const r = document.getElementById('mItemRate').value.trim();
+        if (!n || !c) return alert("Item Name અને Cycle Time ભરો.");
+        await window.fLib.addDoc(window.fLib.collection(window.db,"items"), {
+            name: n, cycle: parseFloat(c), rate: r ? parseFloat(r) : 0
+        });
+        document.getElementById('mItemName').value  = "";
+        document.getElementById('mItemCycle').value = "";
+        document.getElementById('mItemRate').value  = "";
+        window.syncData();
+    };
+
+    window.addGenMaster = async () => {
+        const n = document.getElementById('mGenName').value.trim();
+        if (!n) return alert("Work Name ભરો.");
+        await window.fLib.addDoc(window.fLib.collection(window.db,"gen_master"), { name: n });
+        document.getElementById('mGenName').value = "";
+        window.syncData();
+    };
+
+    window.openEditItem = id => {
+        const it = items_db.find(x => x.id===id); if (!it) return;
+        document.getElementById('editItemId').value    = id;
+        document.getElementById('editItemName').value  = it.name;
+        document.getElementById('editItemCycle').value = it.cycle || '';
+        document.getElementById('editItemRate').value  = it.rate  || '';
+        document.getElementById('editModal').classList.add('active');
+    };
+    window.closeEditModal = () => document.getElementById('editModal').classList.remove('active');
+    window.saveEditItem = async () => {
+        const id = document.getElementById('editItemId').value;
+        const n  = document.getElementById('editItemName').value.trim();
+        const c  = document.getElementById('editItemCycle').value.trim();
+        const r  = document.getElementById('editItemRate').value.trim();
+        if (!n || !c) return alert("Name & Cycle Time required.");
+        await window.fLib.updateDoc(window.fLib.doc(window.db,"items",id), {
+            name:n, cycle:parseFloat(c), rate:r?parseFloat(r):0
+        });
+        closeEditModal(); window.syncData();
+    };
+
+    window.openEditGen = id => {
+        const gn = gens_db.find(x => x.id===id); if (!gn) return;
+        document.getElementById('editGenId').value   = id;
+        document.getElementById('editGenName').value = gn.name;
+        document.getElementById('editGenModal').classList.add('active');
+    };
+    window.closeEditGenModal = () => document.getElementById('editGenModal').classList.remove('active');
+    window.saveEditGen = async () => {
+        const id = document.getElementById('editGenId').value;
+        const n  = document.getElementById('editGenName').value.trim();
+        if (!n) return alert("Name required.");
+        await window.fLib.updateDoc(window.fLib.doc(window.db,"gen_master",id), { name:n });
+        closeEditGenModal(); window.syncData();
+    };
+
+    window.deleteMasterItem = async id => {
+        if (confirm("Delete this item?")) {
+            await window.fLib.deleteDoc(window.fLib.doc(window.db,"items",id));
+            window.syncData();
+        }
+    };
+    window.deleteGenMaster = async id => {
+        if (confirm("Delete this work type?")) {
+            await window.fLib.deleteDoc(window.fLib.doc(window.db,"gen_master",id));
+            window.syncData();
+        }
+    };
+
+    /* ===== EDIT ENTRY ===== */
+    window.calcEditPreview = () => {
+        const qty  = parseFloat(document.getElementById('editEntryQty').value || 0);
+        const rate = parseFloat(document.getElementById('editEntryRate').value || 0);
+        const prev = document.getElementById('editItemPreview');
+        if (qty > 0 && rate > 0) {
+            prev.style.display = 'block';
+            prev.textContent = `📦 ${qty} pcs × ₹${rate.toFixed(4)}/pc = ₹${(qty*rate).toFixed(2)}`;
+        } else {
+            prev.style.display = 'none';
+        }
+    };
+    window.calcEditGenPreview = () => {
+        const h = parseFloat(document.getElementById('editGenHrs').value || 0);
+        const prev = document.getElementById('editGenPreview');
+        if (h > 0) { prev.style.display='block'; prev.textContent=`⏱ ${h} hr = ₹${(h*GEN_RATE).toFixed(2)}`; }
+        else prev.style.display='none';
+    };
+
+    window.openEditEntry = async id => {
+        const snap = await window.fLib.getDocs(window.fLib.collection(window.db,"production_entries"));
+        const e = snap.docs.map(d=>({id:d.id,...d.data()})).find(d=>d.id===id);
+        if (!e) return alert("Entry not found.");
+        document.getElementById('editEntryId').value   = id;
+        document.getElementById('editEntryType').value = e.type;
+        document.getElementById('editEntryDate').value = e.date || '';
+        document.getElementById('editInTime').value    = e.inTime  || '';
+        document.getElementById('editOutTime').value   = e.outTime || '';
+        document.getElementById('editItemSection').style.display = 'none';
+        document.getElementById('editGenSection').style.display  = 'none';
+        if (e.type === 'item') {
+            document.getElementById('editItemSection').style.display = 'block';
+            document.getElementById('editEntryItemName').value = e.name  || '';
+            document.getElementById('editEntryCycle').value    = e.cycle || '';
+            document.getElementById('editEntryRate').value     = e.rate  || '';
+            document.getElementById('editEntryQty').value      = e.qty   || '';
+            document.getElementById('editEntryNotes').value    = e.notes || '';
+            calcEditPreview();
+        } else if (e.type === 'general') {
+            document.getElementById('editGenSection').style.display = 'block';
+            document.getElementById('editGenWorkName').value = e.name  || '';
+            document.getElementById('editGenHrs').value      = e.hrs   || '';
+            document.getElementById('editGenNotes').value    = e.notes || '';
+            calcEditGenPreview();
+        }
+        document.getElementById('editEntryModal').classList.add('active');
+    };
+    window.closeEditEntryModal = () => document.getElementById('editEntryModal').classList.remove('active');
+
+    window.saveEditEntry = async () => {
+        const id   = document.getElementById('editEntryId').value;
+        const type = document.getElementById('editEntryType').value;
+        const date = document.getElementById('editEntryDate').value;
+        if (!date) return alert("Date ભરો.");
+        const inTime  = document.getElementById('editInTime').value;
+        const outTime = document.getElementById('editOutTime').value;
+        let u = { date, inTime, outTime };
+        if (type === 'item') {
+            const qty  = parseFloat(document.getElementById('editEntryQty').value  || 0);
+            const rate = parseFloat(document.getElementById('editEntryRate').value  || 0);
+            const notes= document.getElementById('editEntryNotes').value.trim();
+            u = { ...u, qty, rate, amt: parseFloat((qty*rate).toFixed(2)), notes, type:'item' };
+        } else if (type === 'general') {
+            const hrs  = parseFloat(document.getElementById('editGenHrs').value || 0);
+            const notes= document.getElementById('editGenNotes').value.trim();
+            u = { ...u, hrs, amt: parseFloat((hrs*GEN_RATE).toFixed(2)), notes, type:'general' };
+        }
+        await window.fLib.updateDoc(window.fLib.doc(window.db,"production_entries",id), u);
+        closeEditEntryModal(); loadReport(); loadDayTotal();
+        alert("✅ Entry updated!");
+    };
+</script>
+</body>
+</html>
