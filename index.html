@@ -69,6 +69,16 @@
         .pdf-range-block:last-child { margin-bottom: 0; }
         .pdf-range-title { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
         .pdf-range .row2 input { margin-bottom: 0; }
+        /* Searchable dropdown */
+        .search-select-wrapper { position: relative; margin-bottom: 8px; }
+        .search-select-input { width: 100%; padding: 9px 10px 9px 32px; border: 1.5px solid #ccc; border-radius: 8px; font-size: 13px; background: #fafafa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%231a73e8' stroke-width='2.5'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 10px center; transition: border 0.2s; box-sizing: border-box; }
+        .search-select-input:focus { border-color: var(--accent); outline: none; background-color: #fff; }
+        .search-select-list { display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1.5px solid var(--accent); border-radius: 8px; max-height: 180px; overflow-y: auto; z-index: 999; box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+        .search-select-item { padding: 10px 12px; font-size: 13px; cursor: pointer; border-bottom: 1px solid #f0f0f0; transition: background 0.15s; }
+        .search-select-item:last-child { border-bottom: none; }
+        .search-select-item:hover, .search-select-item:active { background: #eef3ff; color: var(--accent); font-weight: 600; }
+        .search-select-item.no-result { color: #999; cursor: default; font-style: italic; }
+        .search-select-item.no-result:hover { background: none; color: #999; font-weight: 400; }
         /* Item entry row */
         .item-entry-row { background: #f8faff; border: 1px solid #d0e3ff; border-radius: 10px; padding: 11px; margin-bottom: 10px; position: relative; }
         .item-entry-row .remove-item-btn { position: absolute; top: 8px; right: 8px; background: var(--danger); color: white; border: none; border-radius: 6px; padding: 3px 8px; font-size: 12px; cursor: pointer; }
@@ -503,16 +513,17 @@
     window.addItemEntryRow = () => {
         itemRowCount++;
         const id  = itemRowCount;
-        const opts = items_db.map((it,i) =>
-            `<option value="${i}">${it.name}${it.rate ? ' (₹'+parseFloat(it.rate).toFixed(2)+'/pc)' : ''}</option>`
-        ).join('');
         document.getElementById('itemEntriesContainer').insertAdjacentHTML('beforeend', `
         <div class="item-entry-row" id="itemRow_${id}">
             <button class="remove-item-btn" onclick="removeItemRow(${id})">✕</button>
             <label>Item</label>
-            <select id="itemSel_${id}" onchange="autoFillRow(${id})" style="margin-bottom:8px;">
-                <option value="">-- Select Item --</option>${opts}
-            </select>
+            <div class="search-select-wrapper" id="itemSelWrapper_${id}">
+                <input type="text" class="search-select-input" id="itemSelText_${id}"
+                    placeholder="🔍 Item name type karo..." autocomplete="off"
+                    oninput="filterItemList(${id})" onfocus="showItemList(${id})">
+                <div class="search-select-list" id="itemSelList_${id}"></div>
+            </div>
+            <input type="hidden" id="itemSel_${id}" value="">
             <div class="row2" style="margin-bottom:4px;">
                 <div>
                     <label style="font-size:10px;color:#888;">Cycle Time (s)</label>
@@ -544,13 +555,18 @@
     window.addGenEntryRow = () => {
         genRowCount++;
         const id   = genRowCount;
-        const opts = gens_db.map((gn,i) => `<option value="${i}">${gn.name}</option>`).join('');
         document.getElementById('genEntriesContainer').insertAdjacentHTML('beforeend', `
         <div class="gen-entry-row" id="genRow_${id}">
             <button class="remove-gen-btn" onclick="removeGenRow(${id})">✕</button>
             <div class="gen-row-label">🛠️ General Work <span style="font-size:10px;color:var(--success);font-weight:400;">— ₹38.33/hr</span></div>
             <label>Work Type</label>
-            <select id="genSel_${id}" style="margin-bottom:8px;"><option value="">-- Select Work --</option>${opts}</select>
+            <div class="search-select-wrapper" id="genSelWrapper_${id}">
+                <input type="text" class="search-select-input" id="genSelText_${id}"
+                    placeholder="🔍 Work type karo..." autocomplete="off"
+                    oninput="filterGenList(${id})" onfocus="showGenList(${id})">
+                <div class="search-select-list" id="genSelList_${id}"></div>
+            </div>
+            <input type="hidden" id="genSel_${id}" value="">
             <label>Hours <span style="font-size:10px;color:#888;font-weight:400;">(decimal OK — e.g. 1.5 = 1hr 30min)</span></label>
             <input type="number" id="genHrs_${id}" step="0.1" min="0" placeholder="e.g. 1.5" oninput="calcGenRowPreview(${id})" style="margin-bottom:4px;">
             <div class="gen-preview-row" id="genRowPreview_${id}"></div>
@@ -1104,6 +1120,67 @@
         await window.fLib.updateDoc(window.fLib.doc(window.db,"gen_master",id), { name:n });
         closeEditGenModal(); window.syncData();
     };
+
+    /* ===== SEARCHABLE DROPDOWN — ITEM ===== */
+    window.showItemList = rowId => { filterItemList(rowId); };
+
+    window.filterItemList = rowId => {
+        const q    = (document.getElementById(`itemSelText_${rowId}`).value || '').toLowerCase();
+        const list = document.getElementById(`itemSelList_${rowId}`);
+        const hits = items_db.map((it,i) => ({it,i})).filter(({it}) => it.name.toLowerCase().includes(q));
+        if (!hits.length) {
+            list.innerHTML = '<div class="search-select-item no-result">કોઈ item મળ્યું નહીં</div>';
+        } else {
+            list.innerHTML = hits.map(({it,i}) =>
+                `<div class="search-select-item" onmousedown="selectItem(${rowId},${i})">
+                    ${it.name}
+                    ${it.rate ? `<span style="color:#888;font-size:11px;"> — ₹${parseFloat(it.rate).toFixed(2)}/pc</span>` : ''}
+                    ${it.cycle ? `<span style="color:#1a73e8;font-size:11px;"> | ${it.cycle}s</span>` : ''}
+                </div>`
+            ).join('');
+        }
+        list.style.display = 'block';
+    };
+
+    window.selectItem = (rowId, idx) => {
+        const item = items_db[idx];
+        document.getElementById(`itemSelText_${rowId}`).value = item.name;
+        document.getElementById(`itemSel_${rowId}`).value     = idx;
+        document.getElementById(`itemSelList_${rowId}`).style.display = 'none';
+        autoFillRow(rowId);
+    };
+
+    /* ===== SEARCHABLE DROPDOWN — GEN WORK ===== */
+    window.showGenList = rowId => { filterGenList(rowId); };
+
+    window.filterGenList = rowId => {
+        const q    = (document.getElementById(`genSelText_${rowId}`).value || '').toLowerCase();
+        const list = document.getElementById(`genSelList_${rowId}`);
+        const hits = gens_db.map((gn,i) => ({gn,i})).filter(({gn}) => gn.name.toLowerCase().includes(q));
+        if (!hits.length) {
+            list.innerHTML = '<div class="search-select-item no-result">કોઈ work type મળ્યું નહીં</div>';
+        } else {
+            list.innerHTML = hits.map(({gn,i}) =>
+                `<div class="search-select-item" onmousedown="selectGen(${rowId},${i})">${gn.name}</div>`
+            ).join('');
+        }
+        list.style.display = 'block';
+    };
+
+    window.selectGen = (rowId, idx) => {
+        const gn = gens_db[idx];
+        document.getElementById(`genSelText_${rowId}`).value = gn.name;
+        document.getElementById(`genSel_${rowId}`).value     = idx;
+        document.getElementById(`genSelList_${rowId}`).style.display = 'none';
+    };
+
+    /* Close dropdowns when tapping/clicking outside */
+    document.addEventListener('click', e => {
+        document.querySelectorAll('.search-select-list').forEach(list => {
+            const wrapper = list.closest('.search-select-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) list.style.display = 'none';
+        });
+    });
 
     window.deleteMasterItem = async id => {
         if (confirm("Delete this item?")) {
