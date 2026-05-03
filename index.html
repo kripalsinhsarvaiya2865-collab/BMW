@@ -909,79 +909,137 @@
         if (!pF || !pT || !lF || !lT) return alert("Please fill all PDF date range fields.");
 
         const { jsPDF } = window.jspdf;
-        const doc  = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const doc   = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
         const pageW = doc.internal.pageSize.getWidth();
 
-        const snap = await window.fLib.getDocs(window.fLib.collection(window.db,"production_entries"));
-        const all  = snap.docs.map(d => d.data());
+        const snap   = await window.fLib.getDocs(window.fLib.collection(window.db, "production_entries"));
+        const all    = snap.docs.map(d => d.data());
+        const opName = OPERATOR;
 
-        const prodData  = all.filter(d => d.date>=pF && d.date<=pT && d.type!=="leave").sort((a,b)=>a.date.localeCompare(b.date));
-        const leaveData = all.filter(d => d.date>=lF && d.date<=lT);
+        const fmtDate = (d) => { const [y,m,day] = d.split('-'); return `${parseInt(day)}-${parseInt(m)}-${y}`; };
 
-        const totalBrk  = leaveData.reduce((s,e) => s+(parseFloat(e.breakTime)||0), 0);
-        const fmtDate   = d => { const [y,m,day]=d.split('-'); return `${day.padStart(2,'0')}-${m.padStart(2,'0')}-${y}`; };
-        const pLDates   = [...new Set(leaveData.filter(d=>d.name==="Personal Leave").map(d=>d.date))].sort();
-        const kLDates   = [...new Set(leaveData.filter(d=>d.name==="Holiday Leave").map(d=>d.date))].sort();
-        const pL = pLDates.length, kL = kLDates.length;
-        const pLStr = pLDates.map(fmtDate).join(', ') || '-';
-        const kLStr = kLDates.map(fmtDate).join(', ') || '-';
+        const prodData  = all.filter(d => d.date >= pF && d.date <= pT && d.type !== "leave").sort((a,b) => a.date.localeCompare(b.date));
+        const leaveData = all.filter(d => d.date >= lF && d.date <= lT);
 
-        /* Header */
-        doc.setDrawColor(0); doc.setLineWidth(0.5); doc.rect(0,0,pageW,36);
-        doc.setTextColor(0); doc.setFontSize(16); doc.setFont(undefined,'bold');
-        doc.text("DRISHTI FLANGES AND METAL", pageW/2, 12, { align:"center" });
-        doc.setFontSize(9); doc.setFont(undefined,'normal');
-        doc.text("Production & Attendance Report", pageW/2, 20, { align:"center" });
-        doc.setFont(undefined,'bold');
-        doc.text("Operator: " + OPERATOR, pageW/2, 30, { align:"center" });
-        doc.setFont(undefined,'normal');
+        const totalBrk = leaveData.reduce((s, e) => s + (parseFloat(e.breakTime) || 0), 0);
+        const pLDates  = [...new Set(leaveData.filter(d => d.name === "Personal Leave").map(d => d.date))].sort();
+        const kLDates  = [...new Set(leaveData.filter(d => d.name === "Holiday Leave").map(d => d.date))].sort();
+        const pL = pLDates.length;
+        const kL = kLDates.length;
 
-        /* Summary Table */
-        const sumY = 42;
-        const rightX = pageW - 14;
-        doc.setFontSize(9); doc.setFont(undefined,'bold');
-        doc.text("Production:", rightX, sumY+8, { align:"right" });
-        doc.text("Leave/Break:", rightX, sumY+16, { align:"right" });
-        doc.text("Generated:", rightX, sumY+24, { align:"right" });
-        doc.setFont(undefined,'normal');
-        doc.text(`${pF.split('-').reverse().join('-')}  to  ${pT.split('-').reverse().join('-')}`, rightX-32, sumY+8, { align:"right" });
-        doc.text(`${lF.split('-').reverse().join('-')}  to  ${lT.split('-').reverse().join('-')}`, rightX-32, sumY+16, { align:"right" });
-        doc.text(new Date().toLocaleDateString('en-IN'), rightX-32, sumY+24, { align:"right" });
+        /* ════ PREMIUM HEADER ════
+           Left  : Title + Subtitle + Operator + Dates
+           Right : Leave Summary Table
+        ════════════════════════════════════════════════ */
 
+        const HDR_H = 46;
+        const colRW = 62;
+        const colR  = pageW - colRW - 2;
+
+        /* Top blue accent bar */
+        doc.setFillColor(26, 115, 232);
+        doc.rect(0, 0, pageW, 2, 'F');
+
+        /* Bottom separator */
+        doc.setDrawColor(210, 210, 210); doc.setLineWidth(0.25);
+        doc.line(0, HDR_H, pageW, HDR_H);
+
+        /* LEFT: Title + Details */
+        const lx = 5;
+
+        doc.setFontSize(16); doc.setFont(undefined, 'bold');
+        doc.setTextColor(10, 25, 55);
+        doc.text("DRISHTI FLANGES AND METAL", lx, 14);
+
+        /* Blue underline */
+        const tW = doc.getTextWidth("DRISHTI FLANGES AND METAL");
+        doc.setFillColor(26, 115, 232);
+        doc.rect(lx, 15.5, tW, 0.9, 'F');
+
+        /* Subtitle + Operator */
+        doc.setFontSize(8); doc.setFont(undefined, 'normal');
+        doc.setTextColor(90, 90, 90);
+        doc.text("Production & Attendance", lx, 22);
+        doc.setFont(undefined, 'bold'); doc.setTextColor(26, 62, 90);
+        doc.text(`  |  Operator : ${opName}`, lx + doc.getTextWidth("Production & Attendance"), 22);
+
+        /* Divider dot line */
+        doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.2);
+        doc.line(lx, 25, colR - 6, 25);
+
+        /* Date details — label in blue bold, value in dark normal */
+        const dl = (label, value, y) => {
+            doc.setFontSize(7); doc.setFont(undefined, 'bold');
+            doc.setTextColor(26, 115, 232);
+            const labelStr = label + " : ";
+            doc.text(labelStr, lx, y);
+            const labelW = doc.getTextWidth(labelStr);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(30, 30, 30);
+            doc.text(value, lx + labelW, y);
+        };
+
+        const safeDate = (d) => {
+            try {
+                const [y,m,day] = d.split('-');
+                return String(parseInt(day)).padStart(2,'0') + '/' + String(parseInt(m)).padStart(2,'0') + '/' + y;
+            } catch(e) { return d || '--'; }
+        };
+
+        const today = new Date();
+        const genDate = String(today.getDate()).padStart(2,'0') + '/' + String(today.getMonth()+1).padStart(2,'0') + '/' + today.getFullYear();
+
+        dl("PRODUCTION PERIOD",    safeDate(pF) + "  to  " + safeDate(pT), 31);
+        dl("LEAVE / BREAK PERIOD", safeDate(lF) + "  to  " + safeDate(lT), 37);
+        dl("Generated",             genDate, 43);
+
+        /* RIGHT: Leave Summary Table */
         doc.autoTable({
-            startY: sumY,
-            head: [['Summary','Value']],
+            startY: 18,
+            head: [['Leave / Break', 'Count']],
             body: [
-                ['Personal Leave Days', pL],
-                ['Holiday Leave Days',  kL],
-                ['Total Break Hours',   totalBrk.toFixed(2)]
+                ['Personal Leave', pL + ' days'],
+                ['Holiday Leave',  kL + ' days'],
+                ['Total Break',    totalBrk.toFixed(1) + ' hrs']
             ],
-            tableWidth: 70, margin: { left:14 },
-            styles: { fontSize:8 },
-            columnStyles: { 0:{ cellWidth:55 }, 1:{ cellWidth:15, halign:'center' } },
-            headStyles: { fillColor:[220,220,220], textColor:[0,0,0], fontStyle:'bold' }
+            margin:     { left: colR },
+            tableWidth: colRW,
+            styles: {
+                fontSize: 7, halign: 'center',
+                cellPadding: { top: 2, bottom: 2, left: 3, right: 3 },
+                lineColor: [220, 220, 220], lineWidth: 0.2,
+                overflow: 'hidden'
+            },
+            columnStyles: {
+                0: { halign: 'left', cellWidth: colRW - 22 },
+                1: { cellWidth: 22,  halign: 'center', fontStyle: 'bold' }
+            },
+            headStyles: {
+                fillColor: [26, 62, 90], textColor: [255, 255, 255],
+                fontStyle: 'bold', fontSize: 7, halign: 'center'
+            },
+            alternateRowStyles: { fillColor: [245, 248, 255] }
         });
 
-        const afterSumY = doc.lastAutoTable.finalY + 10;
+        const afterSummaryY = Math.max(doc.lastAutoTable.finalY + 4, HDR_H + 7);
 
-        /* Main Production Table */
-        let rows = [], rowMeta = [], grouped = {};
-        const allProd = all.filter(d=>d.date>=pF&&d.date<=pT).sort((a,b)=>a.date.localeCompare(b.date));
-        allProd.forEach(d => { if (!grouped[d.date]) grouped[d.date]=[]; grouped[d.date].push(d); });
+        /* ---- Main production table ---- */
+        let rows = []; let rowMeta = []; let grouped = {};
+        const allData = all.filter(d => d.date >= pF && d.date <= pT).sort((a,b) => a.date.localeCompare(b.date));
+        allData.forEach(d => { if (!grouped[d.date]) grouped[d.date]=[]; grouped[d.date].push(d); });
 
         Object.keys(grouped).sort().forEach(date => {
             const entries  = grouped[date];
-            const inT  = entries.map(e=>e.inTime).filter(x=>x).sort()[0] || "";
-            const outT = entries.map(e=>e.outTime).filter(x=>x).sort().reverse()[0] || "";
-            const dayBreak = entries.reduce((s,e)=>s+(parseFloat(e.breakTime)||0),0);
+            const inT  = entries.map(e => e.inTime).filter(x=>x).sort()[0] || "";
+            const outT = entries.map(e => e.outTime).filter(x=>x).sort().reverse()[0] || "";
+            const dayBreak = entries.reduce((s,e) => s+(parseFloat(e.breakTime)||0), 0);
             entries.forEach((d,i) => {
-                rowMeta.push(d.type==='leave'?'leave':'data');
+                rowMeta.push(d.type==="leave" ? 'leave' : 'data');
+                const pdfCyc = d.type === "item" ? (d.cycle || "") : "";
                 rows.push([
                     i===0 ? fmtDate(date) : "",
-                    d.name + (d.notes ? ` (${d.notes})` : ""),
-                    d.cycle || "",
-                    d.qty   || "",
-                    d.hrs   || "",
+                    d.name+(d.notes?` (${d.notes})`:""),
+                    pdfCyc, d.qty||"", d.hrs||"",
                     i===0 ? (inT+(inT?"-":"")+outT) : "",
                     i===0 ? (dayBreak>0?dayBreak:"") : ""
                 ]);
@@ -989,76 +1047,86 @@
         });
 
         doc.autoTable({
-            startY: afterSumY,
+            startY: afterSummaryY,
             head: [['Date','Description','Cyc(s)','Qty','Hrs','In-Out','Brk']],
             body: rows,
-            margin: { left:14, right:14 },
-            tableWidth: pageW-28,
-            styles: { fontSize:8, halign:'center', cellPadding:{top:3,bottom:3,left:4,right:4} },
+            margin: { left:14, right:14 }, tableWidth: pageW-28,
+            styles: { fontSize:8, halign:'center', cellPadding:{top:3,bottom:3,left:4,right:4}, overflow:'hidden' },
             columnStyles: {
-                0:{halign:'center',cellWidth:22},
-                1:{halign:'left',cellWidth:68,cellPadding:{top:3,bottom:3,left:10,right:4}},
-                2:{cellWidth:16}, 3:{cellWidth:16}, 4:{cellWidth:16},
-                5:{cellWidth:28}, 6:{cellWidth:16}
+                0:{halign:'center',cellWidth:22}, 1:{halign:'left',cellWidth:68,cellPadding:{top:3,bottom:3,left:10,right:4}},
+                2:{cellWidth:18,overflow:'hidden'}, 3:{cellWidth:14}, 4:{cellWidth:14}, 5:{cellWidth:28}, 6:{cellWidth:12}
             },
             headStyles: { fillColor:[220,220,220], textColor:[0,0,0], fontStyle:'bold', halign:'center' },
-            didParseCell: data => {
+            didParseCell: (data) => {
                 if (data.section==='body' && rowMeta[data.row.index]==='leave') {
-                    data.cell.styles.fillColor = [245,245,245];
-                    data.cell.styles.textColor = [80,80,80];
-                    data.cell.styles.fontStyle = 'italic';
+                    data.cell.styles.fillColor=[245,245,245]; data.cell.styles.textColor=[80,80,80]; data.cell.styles.fontStyle='italic';
                 }
             }
         });
 
-        /* Category Summary Table */
-        let iSum={}, gSum={};
+        /* ---- Category summary table ---- */
+        const catStartY = doc.lastAutoTable.finalY + 10;
+        let itemsSum={}; let gensSum={};
         prodData.forEach(d => {
-            if (d.type==='item')    { const iK=d.name+'||'+(d.cycle||0); if(!iSum[iK]) iSum[iK]={name:d.name,qty:0,cycle:d.cycle||0,rate:parseFloat(d.rate||0)}; iSum[iK].qty+=parseFloat(d.qty||0); }
-            if (d.type==='general') { if(!gSum[d.name]) gSum[d.name]=0; gSum[d.name]+=parseFloat(d.hrs||0); }
+            if (d.type==="item") {
+                const cycFmt = d.cycle ? `${d.cycle}` : '';
+                const sumKey = d.name+'|'+cycFmt;
+                if (!itemsSum[sumKey]) itemsSum[sumKey]={name:d.name,cyc:cycFmt,qty:0};
+                itemsSum[sumKey].qty += parseFloat(d.qty||0);
+            } else if (d.type==="general") {
+                if (!gensSum[d.name]) gensSum[d.name]=0;
+                gensSum[d.name] += parseFloat(d.hrs||0);
+            }
         });
-        let catRows=[], catMeta=[];
-        catMeta.push('header'); catRows.push(['','Production Items','','']);
-        Object.keys(iSum).sort((a,b)=>iSum[a].name.localeCompare(iSum[b].name)||(iSum[a].cycle-iSum[b].cycle)).forEach(k => {
-            const it=iSum[k], inkam=it.rate>0?it.qty*it.rate:0;
-            catMeta.push('data');
-            catRows.push(['Item', it.name, `${it.cycle||'-'}s`, `${it.qty} Pcs`]);
+
+        let catRows=[]; let catRowMeta=[];
+        const itemSumKeys = Object.keys(itemsSum).sort((a,b) => {
+            const nc = itemsSum[a].name.localeCompare(itemsSum[b].name);
+            if (nc !== 0) return nc;
+            return (itemsSum[a].cyc||'').localeCompare(itemsSum[b].cyc||'');
         });
-        catMeta.push('header'); catRows.push(['','General Work','','']);
-        Object.keys(gSum).sort((a,b)=>a.localeCompare(b)).forEach(k => {
-            const hrs=gSum[k], amt=hrs*GEN_RATE;
-            catMeta.push('data');
-            catRows.push(['Work', k, '', `${hrs.toFixed(2)} Hrs`]);
-        });
+        const genSumKeys = Object.keys(gensSum).sort((a,b)=>a.localeCompare(b));
+        if(itemSumKeys.length>0){
+            catRowMeta.push('header'); catRows.push(['','Production Items','','']);
+            itemSumKeys.forEach(k => {
+                catRowMeta.push('data');
+                catRows.push(['Item', itemsSum[k].name, itemsSum[k].cyc||'', `${itemsSum[k].qty} Pcs`]);
+            });
+        }
+        if(genSumKeys.length>0){
+            catRowMeta.push('header'); catRows.push(['','General Work','','']);
+            genSumKeys.forEach(k => {
+                catRowMeta.push('data');
+                catRows.push(['Work',k,'',`${gensSum[k].toFixed(2)} Hrs`]);
+            });
+        }
 
         if (catRows.length > 2) {
             doc.autoTable({
-                startY: doc.lastAutoTable.finalY + 10,
+                startY: catStartY,
                 head: [['Category','Description','Cyc(s)','Qty / Hrs']],
                 body: catRows,
-                margin: { left:14 },
-                tableWidth: 'auto',
+                margin: { left:14 }, tableWidth:'auto',
                 styles: { fontSize:9, halign:'center' },
-                columnStyles: { 1:{halign:'left'}, 2:{cellWidth:18,halign:'center'}, 3:{halign:'right'} },
+                columnStyles: { 1:{halign:'left'}, 2:{halign:'center',cellWidth:18}, 3:{halign:'right'} },
                 headStyles: { fillColor:[220,220,220], textColor:[0,0,0], fontStyle:'bold' },
-                didParseCell: data => {
-                    if (data.section==='body' && catMeta[data.row.index]==='header') {
-                        data.cell.styles.fillColor=[240,240,240];
-                        data.cell.styles.fontStyle='bold';
-                        data.cell.styles.halign='center';
-                        if ([0,2,3].includes(data.column.index)) data.cell.text=[''];
+                didParseCell: (data) => {
+                    if (data.section==='body' && catRowMeta[data.row.index]==='header') {
+                        data.cell.styles.fillColor=[240,240,240]; data.cell.styles.fontStyle='bold'; data.cell.styles.halign='center';
+                        if (data.column.index===0||data.column.index===2||data.column.index===3) data.cell.text=[''];
                     }
                 }
             });
         }
 
-        /* Footer */
-        const totalPages = doc.internal.getNumberOfPages();
-        for (let i=1; i<=totalPages; i++) {
+        /* ---- Page Footer ---- */
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
             doc.setFontSize(8); doc.setTextColor(150);
-            doc.text(`Page ${i} of ${totalPages}  |  DRISHTI FLANGES AND METAL  |  Operator: ${OPERATOR}`, pageW/2, 290, { align:'center' });
+            doc.text(`Page ${i} of ${pageCount}  |  DRISHTI FLANGES AND METAL  |  Operator: ${opName}`, pageW/2, 290, { align:"center" });
         }
+
         doc.save(`DFM_Report_${pF}_to_${pT}.pdf`);
     };
 
